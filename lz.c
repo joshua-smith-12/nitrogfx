@@ -81,6 +81,10 @@ unsigned char *LZCompress(unsigned char *src, int srcSize, int *compressedSize, 
 
 	unsigned char *dest = malloc(worstCaseDestSize);
 
+	// tracks which indices in `src` were part of a displacement
+	unsigned char *dispIndices = malloc(srcSize);
+	memset(dispIndices, 0x00, srcSize);
+
 	if (dest == NULL)
 		goto fail;
 
@@ -106,6 +110,11 @@ unsigned char *LZCompress(unsigned char *src, int srcSize, int *compressedSize, 
 				int blockStart = srcPos - blockDistance;
 				int blockSize = 0;
 
+				if (dispIndices[blockStart] == 1) {
+					blockDistance++;
+					continue;
+				}
+
 				while (blockSize < 18
 				    && srcPos + blockSize < srcSize
 				    && src[blockStart + blockSize] == src[srcPos + blockSize])
@@ -124,6 +133,12 @@ unsigned char *LZCompress(unsigned char *src, int srcSize, int *compressedSize, 
 
 			if (bestBlockSize >= 3) {
 				*flags |= (0x80 >> i);
+				int tmpIdx = 0;
+				while (srcPos + tmpIdx < bestBlockSize) {
+					dispIndices[srcPos + tmpIdx] = 1;
+					printf("set index at %d\n", srcPos + tmpIdx);
+					tmpIdx++;
+				}
 				srcPos += bestBlockSize;
 				bestBlockSize -= 3;
 				bestBlockDistance--;
@@ -143,6 +158,7 @@ unsigned char *LZCompress(unsigned char *src, int srcSize, int *compressedSize, 
 				}
 
 				*compressedSize = destPos;
+				free(dispIndices);
 				return dest;
 			}
 		}
