@@ -134,9 +134,8 @@ unsigned char *LZCompress(unsigned char *src, int srcSize, int *compressedSize, 
 			if (bestBlockSize >= 3) {
 				*flags |= (0x80 >> i);
 				int tmpIdx = 0;
-				while (srcPos + tmpIdx < bestBlockSize) {
+				while (tmpIdx < bestBlockSize) {
 					dispIndices[srcPos + tmpIdx] = 1;
-					printf("set index at %d\n", srcPos + tmpIdx);
 					tmpIdx++;
 				}
 				srcPos += bestBlockSize;
