@@ -1593,6 +1593,7 @@ void WriteNtrAnimation(char *path, struct JsonToAnimationOptions *options)
     {
         int sequenceLen = 0;
         int resultIndex = 0;
+        int lastNewResultIndex = -1;
         for (int j = 0; j < options->sequenceData[i]->frameCount; j++)
         {
             // check if the result has already been used
@@ -1609,6 +1610,7 @@ void WriteNtrAnimation(char *path, struct JsonToAnimationOptions *options)
                 if (usedResults[resultIndex] == -1)
                 {
                     usedResults[resultIndex] = options->sequenceData[i]->frameData[j]->resultId;
+                    lastNewResultIndex = options->sequenceData[i]->frameData[j]->resultId;
                     break;
                 }
             }
@@ -1624,11 +1626,11 @@ void WriteNtrAnimation(char *path, struct JsonToAnimationOptions *options)
                     sequenceLen += 0x8;
             }
         }
-        if (sequenceLen % 4 != 0) 
+        if (sequenceLen % 4 != 0 && lastNewResultIndex != -1)
         {
             totalSize += 0x02;
-            // mark the last animationResult for the sequence as padded, this saves needing to check this again later
-            options->animationResults[resultIndex]->padded = true;
+            // mark the last new animationResult index for the sequence as padded, this saves needing to check this again later
+            options->animationResults[lastNewResultIndex]->padded = true;
         }
     }
 
